@@ -1,13 +1,15 @@
 """
 robot_loader.py
 
-Generic URDF loader for Isaac Sim 6.0.1 (Optimized for Relative Paths)
+Generic URDF loader for Isaac Sim 6.0.1
 """
 
 from pathlib import Path
 
 import omni.usd
-from pxr import Gf, UsdGeom
+import omni.kit.commands
+
+from pxr import Gf, UsdGeom, UsdPhysics
 
 from isaacsim.asset.importer.urdf import (
     URDFImporter,
@@ -15,6 +17,7 @@ from isaacsim.asset.importer.urdf import (
 )
 
 from isaacsim.core.utils.stage import add_reference_to_stage
+from isaacsim.core.prims import SingleArticulation
 
 
 class RobotLoader:
@@ -30,9 +33,6 @@ class RobotLoader:
         fix_base=True,
         merge_mesh=False,
     ):
-        """
-        Import a URDF and spawn it into the current stage.
-        """
 
         urdf_path = Path(urdf_path).resolve()
 
@@ -47,19 +47,25 @@ class RobotLoader:
         config.urdf_path = str(urdf_path)
         config.fix_base = fix_base
         config.merge_mesh = merge_mesh
-        
+
         config.import_visual_meshes = True
         config.import_collision_meshes = True
         config.bundle_subfolders = True
-        config.force_override = True  # 覆盖旧缓存，防止脏数据影响
-
-        #
-        # Convert URDF → USD
-        #
+        config.force_override = True
+        config.import_joints = True
+        config.replace_inertial_meshes = True
+        config.override_joint_stiffness = 10000.0
+        config.override_joint_damping = 1000.0
         importer = URDFImporter(config)
-
+        config = URDFImporterConfig()
+        print(config.joint_drive_type)
+        print(config.joint_target_type)
+        print(type(config.joint_drive_type))
+        print(type(config.joint_target_type))   
+        print(dir(config))
         print("=" * 60)
-        print("Importing URDF with local relative paths...")
+        print("Importing URDF...")
+        print("=" * 60)
 
         usd_path = importer.import_urdf()
 
@@ -67,14 +73,17 @@ class RobotLoader:
         print(usd_path)
 
         #
-        # Spawn USD
+        # Spawn
         #
+        stage = omni.usd.get_context().get_stage()
+
         prim_path = f"/World/{robot_name}"
 
-        # 避免旧节点冲突，在挂载前如果存在旧节点则先删除
-        stage = omni.usd.get_context().get_stage()
-        if stage.GetPrimAtPath(prim_path):
-            omni.kit.commands.execute('DeletePrim', path=prim_path)
+        if stage.GetPrimAtPath(prim_path).IsValid():
+            omni.kit.commands.execute(
+                "DeletePrim",
+                path=prim_path,
+            )
 
         add_reference_to_stage(
             usd_path=usd_path,
@@ -82,16 +91,13 @@ class RobotLoader:
         )
 
         #
-        # Move robot
+        # Move Robot
         #
         prim = stage.GetPrimAtPath(prim_path)
 
         if not prim.IsValid():
-            raise RuntimeError(f"Cannot find prim {prim_path}")
+            raise RuntimeError(f"Cannot find {prim_path}")
 
-        #
-        # Translate only
-        #
         xform = UsdGeom.XformCommonAPI(prim)
 
         xform.SetTranslate(
@@ -103,13 +109,73 @@ class RobotLoader:
         )
 
         print("=" * 60)
-        print(f"Robot loaded successfully: {prim_path}")
-
-        print("Children:")
+        print("Robot Children")
 
         for child in prim.GetChildren():
-            print("  -", child.GetName())
+            print(" -", child.GetName())
+
+        #
+        # Search Articulation Root
+        #
+        print("=" * 60)
+        print("Searching Articulation Root...")
+
+        articulation_path = None
+
+        for p in stage.Traverse():
+
+            if not str(p.GetPath()).startswith(prim_path):
+                continue
+
+            if p.HasAPI(UsdPhysics.ArticulationRootAPI):
+
+                articulation_path = str(p.GetPath())
+
+                print("Found:", articulation_path)
+
+                break
+
+        if articulation_path is None:
+            raise RuntimeError(
+                "No Articulation Root found!"
+            )
 
         print("=" * 60)
 
-        return prim_path
+        #
+        # Print Drives
+        #
+        print("Drive APIs:")
+
+        for p in stage.Traverse():
+
+            if not str(p.GetPath()).startswith(prim_path):
+                continue
+
+            drive = UsdPhysics.DriveAPI.Get(p, "angular")
+
+            if drive:
+
+                print(
+                    p.GetPath(),
+                    " stiffness=",
+                    drive.GetStiffnessAttr().Get(),
+                    " damping=",
+                    drive.GetDampingAttr().Get(),
+                    " maxForce=",
+                    drive.GetMaxForceAttr().Get(),
+                )
+
+        print("=" * 60)
+
+        #
+        # Create Articulation
+        #
+        robot = SingleArticulation(
+            prim_path=articulation_path,
+            name=robot_name,
+        )
+
+        print("Robot Prim:", robot.prim_path)
+
+        return robot

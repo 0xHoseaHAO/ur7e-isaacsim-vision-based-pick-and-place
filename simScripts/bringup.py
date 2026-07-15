@@ -2,22 +2,16 @@
 bringup.py
 
 One-command Isaac Sim bringup
-
 Isaac Sim 6.0.1
 """
 
 from isaacsim import SimulationApp
-
-# ---------------------------------------------------------------------
-# Isaac Sim MUST be initialized before importing other Isaac modules
-# ---------------------------------------------------------------------
 
 simulation_app = SimulationApp(
     {
         "headless": False,
     }
 )
-# ======== 在这里加载 Extension ========
 
 import omni.kit.app
 
@@ -33,19 +27,13 @@ ext_manager.set_extension_enabled_immediate(
     True,
 )
 
-print(
-    "ROS2 Bridge:",
-    ext_manager.is_extension_enabled("isaacsim.ros2.bridge"),
-)
+print("ROS2 Bridge:",
+      ext_manager.is_extension_enabled("isaacsim.ros2.bridge"))
 
-print(
-    "ROS2 Nodes:",
-    ext_manager.is_extension_enabled("isaacsim.ros2.nodes"),
-)
+print("ROS2 Nodes:",
+      ext_manager.is_extension_enabled("isaacsim.ros2.nodes"))
 
-# ---------------------------------------------------------------------
-# Imports after SimulationApp
-# ---------------------------------------------------------------------
+# --------------------------------------------------------
 
 from isaacsim.core.api import World
 
@@ -53,6 +41,9 @@ from scene_builder import SceneBuilder
 from robot_loader import RobotLoader
 from camera_utils import CameraUtils
 from ros2_cam import ROS2CameraPublisher
+from ros2_joint_command import create_joint_command_graph
+from ros2_moveit import create_moveit_action_graph
+from publish_joint_states import create_joint_state_publisher
 
 
 def main():
@@ -64,39 +55,35 @@ def main():
     world = World(stage_units_in_meters=1.0)
 
     #
-    # Build environment
+    # Scene
     #
-    builder = SceneBuilder(world)
-    builder.build()
+    SceneBuilder(world).build()
 
     #
-    # Load robot
+    # Robot
     #
     loader = RobotLoader()
 
-    robot_path = loader.load(
+    robot = loader.load(
         urdf_path="./assets/robots/ur7e/ur7e.urdf",
         robot_name="UR7e",
-        position=(0.0, 0.0, 0.0),
+        position=(0, 0, 0),
         fix_base=True,
     )
 
-    print(f"Robot loaded at {robot_path}")
+    print("Robot loaded.")
 
     #
     # Camera
     #
     camera = CameraUtils()
 
-    camera_path = camera.create_camera(
+    camera.create_camera(
         name="MainCamera",
         position=(1.2, -1.2, 1.2),
         rotation=(55.0, 0.0, 45.0),
     )
 
-    #
-    # ROS2 Camera Publisher
-    #
     ros = ROS2CameraPublisher()
 
     ros.publish_rgb(
@@ -109,24 +96,58 @@ def main():
         "/World/MainCamera",
     )
 
-    ros.publish_camera_info(
-        "/ROS2/CameraInfo",
-    )
     #
-    # Initialize simulation
+    # Joint State Publisher
+    #
+    create_joint_state_publisher(
+        graph_path="/ROS2/JointState",
+        robot_prim="/World/UR7e/Geometry/world/base_link",
+        topic="/joint_states",
+    )
+
+    #
+    # Initialize
     #
     world.reset()
+    robot.initialize()
 
     print("=" * 60)
-    print("Simulation started.")
+    print("Robot initialized")
     print("=" * 60)
 
+    print("DOF:", robot.num_dof)
+    print("Joint Names:", robot.dof_names)
+
     #
-    # Main Loop
+    # MoveIt
     #
+    create_moveit_action_graph(
+        robot_prim="/World/UR7e/Geometry/world/base_link",
+    )
+
+    #
+    # Joint Command
+    #
+    create_joint_command_graph(
+        robot_prim="/World/UR7e/Geometry/world/base_link",
+        topic="/joint_command",
+    )
+
+    print("=" * 60)
+    print("Simulation started")
+    print("=" * 60)
+
+    frame = 0
+
     while simulation_app.is_running():
 
         world.step(render=True)
+
+        frame += 1
+
+        if frame % 120 == 0:
+            print("Frame:", frame)
+            print(robot.get_joint_positions())
 
     simulation_app.close()
 
