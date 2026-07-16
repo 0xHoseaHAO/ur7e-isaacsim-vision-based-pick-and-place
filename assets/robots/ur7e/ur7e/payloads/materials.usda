@@ -3,13 +3,13 @@
     customLayerData = {
         string creator = "URDF USD Converter v0.1.3"
     }
-    doc = """Generated from Composed Stage of root layer /tmp/tmpmmhu0wgn/ur7e.usdc
+    doc = """Generated from Composed Stage of root layer /tmp/tmp_990lgaz/ur7e.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_ur7e_fdtyzht9/usdex_ur7e/ur7e.usdc
+Generated from Composed Stage of root layer /tmp/urdf_import_ur7e_68xhdm1k/usdex_ur7e/ur7e.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_ur7e_fdtyzht9/temp_ur7e/ur7e.usd
+Generated from Composed Stage of root layer /tmp/urdf_import_ur7e_68xhdm1k/temp_ur7e/ur7e.usd
 
 
 Generated from Composed Stage of root layer /home/hosea/Git Directory/Vision-Based-Pick-and-Place/assets/robots/ur7e/ur7e/payloads/base.usd
