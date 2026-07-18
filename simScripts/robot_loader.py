@@ -57,6 +57,8 @@ class RobotLoader:
         config.override_joint_stiffness = 10000.0
         config.override_joint_damping = 1000.0
         importer = URDFImporter(config)
+        print(dir(importer))
+        print(type(importer))
         config = URDFImporterConfig()
         print(config.joint_drive_type)
         print(config.joint_target_type)
