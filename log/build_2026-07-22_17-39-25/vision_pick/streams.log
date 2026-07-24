@@ -1,0 +1,35 @@
+[0.758s] Invoking command in '/home/hosea/Git Directory/Vision-Based-Pick-and-Place/vision_pick': PYTHONPATH=/home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/vision_pick build --build-base /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build install --record /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/install.log --install-scripts $base/lib/vision_pick --single-version-externally-managed install_data
+[0.979s] running egg_info
+[0.990s] writing ../build/vision_pick/vision_pick.egg-info/PKG-INFO
+[0.991s] writing dependency_links to ../build/vision_pick/vision_pick.egg-info/dependency_links.txt
+[0.991s] writing entry points to ../build/vision_pick/vision_pick.egg-info/entry_points.txt
+[0.991s] writing requirements to ../build/vision_pick/vision_pick.egg-info/requires.txt
+[0.991s] writing top-level names to ../build/vision_pick/vision_pick.egg-info/top_level.txt
+[1.017s] reading manifest file '../build/vision_pick/vision_pick.egg-info/SOURCES.txt'
+[1.023s] writing manifest file '../build/vision_pick/vision_pick.egg-info/SOURCES.txt'
+[1.023s] running build
+[1.023s] running build_py
+[1.023s] copying vision_pick/__init__.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+[1.024s] copying vision_pick/surface_detector.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+[1.024s] copying vision_pick/depth_processor.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+[1.024s] copying vision_pick/color_detector.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+[1.024s] copying vision_pick/yolo_detection_node.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+[1.024s] copying vision_pick/segmentation_node.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+[1.024s] copying vision_pick/pick_place_node.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+[1.025s] copying vision_pick/perception_base.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+[1.025s] running install
+[1.029s] running install_lib
+[1.041s] copying /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick/yolo_detection_node.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages/vision_pick
+[1.042s] byte-compiling /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages/vision_pick/yolo_detection_node.py to yolo_detection_node.cpython-310.pyc
+[1.043s] running install_data
+[1.043s] copying resource/vision_pick -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/share/ament_index/resource_index/packages
+[1.043s] copying package.xml -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/share/vision_pick
+[1.043s] running install_egg_info
+[1.056s] removing '/home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages/vision_pick-0.1.0-py3.10.egg-info' (and everything under it)
+[1.057s] Copying ../build/vision_pick/vision_pick.egg-info to /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages/vision_pick-0.1.0-py3.10.egg-info
+[1.058s] running install_scripts
+[1.153s] Installing pick_place_node script to /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/vision_pick
+[1.154s] Installing segmentation_node script to /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/vision_pick
+[1.154s] Installing yolo_detection_node script to /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/vision_pick
+[1.154s] writing list of installed files to '/home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/install.log'
+[1.174s] Invoked command in '/home/hosea/Git Directory/Vision-Based-Pick-and-Place/vision_pick' returned '0': PYTHONPATH=/home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/vision_pick build --build-base /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build install --record /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/install.log --install-scripts $base/lib/vision_pick --single-version-externally-managed install_data

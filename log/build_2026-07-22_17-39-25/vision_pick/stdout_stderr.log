@@ -1,0 +1,33 @@
+running egg_info
+writing ../build/vision_pick/vision_pick.egg-info/PKG-INFO
+writing dependency_links to ../build/vision_pick/vision_pick.egg-info/dependency_links.txt
+writing entry points to ../build/vision_pick/vision_pick.egg-info/entry_points.txt
+writing requirements to ../build/vision_pick/vision_pick.egg-info/requires.txt
+writing top-level names to ../build/vision_pick/vision_pick.egg-info/top_level.txt
+reading manifest file '../build/vision_pick/vision_pick.egg-info/SOURCES.txt'
+writing manifest file '../build/vision_pick/vision_pick.egg-info/SOURCES.txt'
+running build
+running build_py
+copying vision_pick/__init__.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+copying vision_pick/surface_detector.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+copying vision_pick/depth_processor.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+copying vision_pick/color_detector.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+copying vision_pick/yolo_detection_node.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+copying vision_pick/segmentation_node.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+copying vision_pick/pick_place_node.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+copying vision_pick/perception_base.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick
+running install
+running install_lib
+copying /home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/build/lib/vision_pick/yolo_detection_node.py -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages/vision_pick
+byte-compiling /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages/vision_pick/yolo_detection_node.py to yolo_detection_node.cpython-310.pyc
+running install_data
+copying resource/vision_pick -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/share/ament_index/resource_index/packages
+copying package.xml -> /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/share/vision_pick
+running install_egg_info
+removing '/home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages/vision_pick-0.1.0-py3.10.egg-info' (and everything under it)
+Copying ../build/vision_pick/vision_pick.egg-info to /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/python3.10/site-packages/vision_pick-0.1.0-py3.10.egg-info
+running install_scripts
+Installing pick_place_node script to /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/vision_pick
+Installing segmentation_node script to /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/vision_pick
+Installing yolo_detection_node script to /home/hosea/Git Directory/Vision-Based-Pick-and-Place/install/vision_pick/lib/vision_pick
+writing list of installed files to '/home/hosea/Git Directory/Vision-Based-Pick-and-Place/build/vision_pick/install.log'

@@ -1,0 +1,4 @@
+[console_scripts]
+pick_place_node = vision_pick.pick_place_node:main
+segmentation_node = vision_pick.segmentation_node:main
+yolo_detection_node = vision_pick.yolo_detection_node:main
