@@ -50,7 +50,7 @@ class PickPlaceNode(Node):
             # close enough for the fake suction cup's attach_radius (see
             # gripper_attach.py) to grab it, without the *goal* ending up
             # in collision with the table surface registered at the rod.
-            'grasp_height_offset': 0.15,
+            'grasp_height_offset': 0.01,
             'place_x': 0.67, 'place_y': -0.5, 'place_z': 0.4,
             'retreat_height': 0.10,
             # 180deg about X: identity would leave tool0's approach axis (Z,

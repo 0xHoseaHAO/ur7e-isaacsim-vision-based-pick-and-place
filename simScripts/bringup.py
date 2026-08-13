@@ -110,12 +110,11 @@ def main():
 
     camera = CameraUtils()
 
-    # Defined here (rather than down at the gripper-tip placeholder below)
-    # so the camera mount offset can reference the same value instead of a
-    # second hand-copied number -- this exact mismatch (camera left behind
-    # at an old gripper_reach while the placeholder moved out further,
-    # poking the shaft/jaws into frame) has already happened once before.
-    gripper_reach = 0.15
+    # gripper_reach no longer sizes anything visible (the gripper
+    # placeholder mesh is gone -- see the gripper_tip anchor below), but
+    # GripperAttacher still needs a numeric reach/attach_radius, so it
+    # stays as a plain constant.
+    gripper_reach = 0.16
 
     # NOTE: the prim name here must match the frame_id passed below.
     # ComputeTransformTree/PublishTF names the TF child frame after this
@@ -129,21 +128,20 @@ def main():
     # create_camera's docstring for why a mismatch there silently crops
     # the frame regardless of horizontal_fov_deg.
     camera_resolution = (1280, 720)
+    # With the gripper placeholder mesh removed, nothing sits coaxial with
+    # tool0's forward axis anymore, so the camera no longer needs the local
+    # X offset that used to push it out of the gripper's own view. Only a
+    # small forward (+Z) offset remains, purely to clear the
+    # wrist_3_link/flange geometry itself -- tune the magnitude once
+    # running in Isaac Sim to match the mount.
+    camera_forward_offset = 0.03
     camera_path = camera.create_camera(
         name=camera_name,
         parent_path=tool0_path,
-        # tool0's +Z is "front" (see the flange-tool0 comment in the URDF),
-        # i.e. forward/away from the wrist, so a *positive* Z offset clears
-        # the wrist_3_link/flange geometry instead of placing the camera
-        # inside it. rotation=(180,0,0) then points the camera's view
-        # direction (-Z in its own frame) down tool0's +Z, i.e. forward.
-        # Tune the magnitude once running in Isaac Sim to match the mount.
-        # The gripper placeholder below sits centred on this same forward
-        # axis (x=0, y=0), so a camera at x=0 stares straight down its own
-        # gripper shaft -- black/blocked centre. Offsetting in local X
-        # (unaffected by the 180-about-X flip below, unlike Y/Z) moves the
-        # gripper out of the centre of frame instead.
-        position=(0.06, 0.0, gripper_reach),
+        # tool0's +Z is "front" (see the flange-tool0 comment in the URDF);
+        # rotation=(180,0,0) points the camera's view direction (-Z in its
+        # own frame) down tool0's +Z, i.e. forward.
+        position=(0.0, 0.0, camera_forward_offset),
         rotation=(180.0, 0.0, 0.0),
         resolution=camera_resolution,
         horizontal_fov_deg=120.0,
@@ -192,40 +190,27 @@ def main():
     )
 
     #
-    # Gripper tip (placeholder shape): the UR7e model has no gripper at
-    # all, and the real one referenced from ur10_rg2_ros-master
+    # Gripper tip (invisible anchor, no mesh): the UR7e model has no
+    # gripper at all, and the real one referenced from ur10_rg2_ros-master
     # (robot_descriptions/description/rg2.urdf.xacro) is itself just a
     # fixed, non-articulated mesh -- there's no finger joint to actually
-    # drive either way. This stands in for it with primitive shapes
-    # (skips the STL/DAE mesh import pipeline, which isn't something we
-    # can script reliably without running Isaac Sim to check it): a short
-    # shaft plus a small block at the business end, `gripper_reach` out
-    # from the wrist along its local +Z ("front" per the tool0 comment
-    # above -- but if the mount fell back to 'wrist3' instead of a real
-    # 'tool0', that axis convention isn't verified; check the shape's
-    # orientation in the viewport and flip if it's pointing the wrong way).
-    # This tip -- not the bare wrist -- is what gripper_attach.py now uses
-    # as its reach point, and pick_place_node's grasp_height_offset must be
-    # kept in sync with this value by hand (it's a separate ROS2 parameter
-    # in a different process, so it can't just share this variable the way
-    # the camera mount offset above now does).
+    # drive either way. Earlier this anchor also carried a visible
+    # placeholder shape (a shaft + jaws block); that mesh has been removed,
+    # but the anchor prim itself stays: gripper_attach.py still uses it as
+    # its reach point (nearest-object search + attach-radius), and
+    # pick_place_node's grasp_height_offset must be kept in sync with this
+    # value by hand (it's a separate ROS2 parameter in a different
+    # process, so it can't just share this variable the way the camera
+    # mount offset above now does). `gripper_reach` out from the wrist
+    # along its local +Z ("front" per the tool0 comment above -- but if the
+    # mount fell back to 'wrist3' instead of a real 'tool0', that axis
+    # convention isn't verified).
     #
     gripper_tip_path = f"{tool0_path}/gripper_tip"
     gripper_tip_prim = UsdGeom.Xform.Define(stage, gripper_tip_path)
     UsdGeom.XformCommonAPI(gripper_tip_prim.GetPrim()).SetTranslate(Gf.Vec3d(0.0, 0.0, gripper_reach))
 
-    shaft = UsdGeom.Cylinder.Define(stage, f"{gripper_tip_path}/shaft")
-    shaft.GetRadiusAttr().Set(0.015)
-    shaft.GetHeightAttr().Set(gripper_reach)
-    shaft.GetAxisAttr().Set("Z")
-    shaft.CreateDisplayColorAttr([(0.5, 0.5, 0.5)])
-    UsdGeom.XformCommonAPI(shaft.GetPrim()).SetTranslate(Gf.Vec3d(0.0, 0.0, -gripper_reach / 2.0))
-
-    jaws = UsdGeom.Cube.Define(stage, f"{gripper_tip_path}/jaws")
-    jaws.GetSizeAttr().Set(0.04)
-    jaws.CreateDisplayColorAttr([(0.2, 0.2, 0.2)])
-
-    print(f"Gripper tip placeholder mounted {gripper_reach:.3f}m out from '{candidate}'.")
+    print(f"Gripper tip anchor (no visible mesh) mounted {gripper_reach:.3f}m out from '{candidate}'.")
 
     #
     # Joint State Publisher
@@ -294,16 +279,16 @@ def main():
 
     person_prim = stage.GetPrimAtPath(person_prim_path)
     person_xform = UsdGeom.XformCommonAPI(person_prim)
-    person_xform.SetTranslate(Gf.Vec3d(0, -0.6, 0.12))  # fixed for now -- tune by hand
+    person_xform.SetTranslate(Gf.Vec3d(0, -0.5, 0.10))  # fixed for now -- tune by hand
     # XformCommonAPI.SetScale always writes a GfVec3f, but person.usd's
     # referenced root prim already authors xformOp:scale as double3 --
     # USD won't let a float3 value be written into an already-double3
     # attribute, so set it directly instead of through XformCommonAPI.
     person_scale_attr = person_prim.GetAttribute('xformOp:scale')
     if person_scale_attr.IsValid():
-        person_scale_attr.Set(Gf.Vec3d(0.10, 0.10, 0.10))
+        person_scale_attr.Set(Gf.Vec3d(0.08, 0.08, 0.08))
     else:
-        person_xform.SetScale(Gf.Vec3f(0.10, 0.10, 0.10))
+        person_xform.SetScale(Gf.Vec3f(0.08, 0.08, 0.08))
     # Same double3-vs-float3 issue as the scale op above.
     person_rotate_attr = person_prim.GetAttribute('xformOp:rotateXYZ')
     if person_rotate_attr.IsValid():
@@ -336,6 +321,165 @@ def main():
     UsdGeom.XformCommonAPI(person_collider.GetPrim()).SetScale(Gf.Vec3f(1.0, 1.0,1.0))
     UsdGeom.Imageable(person_collider.GetPrim()).MakeInvisible()
     UsdPhysics.CollisionAPI.Apply(person_collider.GetPrim())
+
+    #
+    # Shared helper for the donut/ramp/bear placement below.
+    #
+    def _world_bounds(prim):
+        cache = UsdGeom.BBoxCache(
+            Usd.TimeCode.Default(), [UsdGeom.Tokens.default_, UsdGeom.Tokens.render]
+        )
+        return cache.ComputeWorldBound(prim).ComputeAlignedRange()
+
+    #
+    # donut on the table -- another COCO-class object ("cup") for YOLO to
+    # detect and for the gripper to pick, same treatment as the person
+    # figurine above: reference the asset, normalize it to a sane
+    # real-world size (donuts aren't authored to any particular scale), then
+    # give it a rigid body + box collider so it can rest on the table and
+    # be lifted.
+    #
+    # The reference is added to a *child* prim ("Asset") rather than to the
+    # transformed prim itself: some referenced assets author a single
+    # combined xformOp:transform matrix on their root instead of separate
+    # translate/rotate/scale ops, and UsdGeomXformCommonAPI silently no-ops
+    # (no error, transform just never changes) when asked to touch a prim
+    # shaped like that -- see the teddy bear below, which hit exactly this.
+    # Keeping our own transform on a fresh wrapper prim sidesteps it.
+    #
+    donut_usd_path = Path("./assets/donut/donut.usd").resolve()
+    if not donut_usd_path.exists():
+        raise FileNotFoundError(donut_usd_path)
+
+    donut_prim_path = "/World/donut"
+    donut_asset_path = f"{donut_prim_path}/Asset"
+    donut_prim = UsdGeom.Xform.Define(stage, donut_prim_path).GetPrim()
+    add_reference_to_stage(usd_path=str(donut_usd_path), prim_path=donut_asset_path)
+    donut_asset_prim = stage.GetPrimAtPath(donut_asset_path)
+    donut_xform = UsdGeom.XformCommonAPI(donut_prim)
+
+    # Rotate first: XformCommonAPI always composes scale, then rotate, then
+    # translate, regardless of the order these Set* calls are made in -- but
+    # the *bounds* queries below reflect only whatever's been authored so
+    # far. Measuring height/bottom before this rotation was in effect would
+    # read the asset's pre-rotation (wrong-axis) extents, throwing off both
+    # the scale factor and the table-surface offset below.
+    donut_xform.SetRotate(Gf.Vec3f(0.0, 0.0, 0.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+
+    donut_target_height = 0.08  # roughly a real donut, in metres -- tune by hand
+    donut_native_range = _world_bounds(donut_asset_prim)
+    donut_native_height = float(donut_native_range.GetMax()[2] - donut_native_range.GetMin()[2])
+    donut_scale_factor = donut_target_height / donut_native_height if donut_native_height > 0 else 1.0
+    donut_xform.SetScale(Gf.Vec3f(donut_scale_factor, donut_scale_factor, donut_scale_factor))
+
+    donut_bottom_z = float(_world_bounds(donut_prim).GetMin()[2])
+    donut_pos_x, donut_pos_y = table_center_x -0.3, table_center_y +0.15
+    donut_xform.SetTranslate(Gf.Vec3d(donut_pos_x, donut_pos_y, table_top_z - donut_bottom_z + 0.01))
+    donut_xform.SetRotate(Gf.Vec3f(0.0, 0.0, 270.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+    UsdPhysics.RigidBodyAPI.Apply(donut_prim)
+    UsdPhysics.MassAPI.Apply(donut_prim).CreateMassAttr().Set(0.3)
+
+    donut_collider_path = f"{donut_prim_path}/collision_proxy"
+    donut_collider = UsdGeom.Cube.Define(stage, donut_collider_path)
+    donut_collider.GetSizeAttr().Set(1.0)
+    # Collider size is authored in the donut prim's own pre-scale local
+    # space, so divide the desired real-world box (roughly the donut's
+    # footprint x height) by its scale factor to cancel that back out --
+    # a rough placeholder box; tune by hand once visible in the viewport.
+    UsdGeom.XformCommonAPI(donut_collider.GetPrim()).SetScale(
+        Gf.Vec3f(
+            (donut_target_height * 0.7) / donut_scale_factor,
+            (donut_target_height * 0.7) / donut_scale_factor,
+            donut_target_height / donut_scale_factor,
+        )
+    )
+    UsdGeom.Imageable(donut_collider.GetPrim()).MakeInvisible()
+    UsdPhysics.CollisionAPI.Apply(donut_collider.GetPrim())
+
+    #
+    # Ramp for the teddy bear -- no ramp asset ships in assets/, so this
+    # builds a simple inclined static prop from a scaled+rotated cube, with
+    # a physics collider (no RigidBodyAPI, so it stays fixed in place like
+    # the table). The bear below rests on this collider under gravity and
+    # ends up tilted to the incline, the same way the rods/person rest on
+    # the table's own collider.
+    #
+    ramp_prim_path = "/World/Ramp"
+    ramp_size = Gf.Vec3f(0.28, 0.22, 0.02)  # up-slope length x width x thickness -- tune by hand
+    ramp_tilt_deg = 45.0  # incline angle -- tune by hand
+
+    ramp_prim = UsdGeom.Cube.Define(stage, ramp_prim_path)
+    ramp_prim.GetSizeAttr().Set(1.0)
+    ramp_xform = UsdGeom.XformCommonAPI(ramp_prim.GetPrim())
+    ramp_xform.SetScale(ramp_size)
+    ramp_xform.SetRotate(Gf.Vec3f(ramp_tilt_deg, 0.0, 180.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+
+    ramp_pos_x, ramp_pos_y, ramp_pos_z = table_center_x + 0.15, table_center_y + 0.10, 0.10
+    ramp_xform.SetTranslate(Gf.Vec3d(ramp_pos_x, ramp_pos_y, ramp_pos_z))
+
+    # Bounds read back *after* the translate above (not before) so they
+    # reflect where the ramp actually ended up -- used below to know how
+    # high the bear needs to start to land on the incline.
+    ramp_bounds = _world_bounds(ramp_prim.GetPrim())
+    ramp_bottom_z = float(ramp_bounds.GetMin()[2])
+    ramp_top_z = float(ramp_bounds.GetMax()[2])
+
+    UsdPhysics.CollisionAPI.Apply(ramp_prim.GetPrim())
+
+    #
+    # Teddy bear -- another COCO class ("teddy bear") for YOLO. Scaled,
+    # tilted to the ramp's incline angle, and dropped just above its high
+    # end so gravity settles it resting against the slope rather than
+    # standing upright on it.
+    #
+    # teddy_bear.usd is UE/FBX-sourced (see the OmniUe4Base/OmniUe4Function
+    # MDL resolver warnings at startup) and authors a single combined
+    # xformOp:transform matrix on its root prim -- XformCommonAPI silently
+    # no-ops on that shape of prim, which is why it kept sitting at the
+    # origin no matter what SetTranslate/SetRotate/SetScale was called
+    # with. Referencing onto a child of a fresh wrapper Xform (same fix as
+    # the donut above) avoids ever calling CommonAPI on the asset's own root.
+    #
+    bear_usd_path = Path("./assets/Teddy_Bear/teddy_bear.usd").resolve()
+    if not bear_usd_path.exists():
+        raise FileNotFoundError(bear_usd_path)
+
+    bear_prim_path = "/World/TeddyBear"
+    bear_asset_path = f"{bear_prim_path}/Asset"
+    bear_prim = UsdGeom.Xform.Define(stage, bear_prim_path).GetPrim()
+    add_reference_to_stage(usd_path=str(bear_usd_path), prim_path=bear_asset_path)
+    bear_asset_prim = stage.GetPrimAtPath(bear_asset_path)
+    bear_xform = UsdGeom.XformCommonAPI(bear_prim)
+
+    bear_target_height = 0.10  # roughly a small teddy bear, in metres -- tune by hand
+    bear_native_range = _world_bounds(bear_asset_prim)
+    bear_native_height = float(bear_native_range.GetMax()[2] - bear_native_range.GetMin()[2])
+    bear_scale_factor = bear_target_height / bear_native_height if bear_native_height > 0 else 1.0
+    bear_xform.SetScale(Gf.Vec3f(bear_scale_factor, bear_scale_factor, bear_scale_factor))
+    bear_xform.SetRotate(Gf.Vec3f(-45.0, 0.0, 180.0), UsdGeom.XformCommonAPI.RotationOrderXYZ)
+
+    bear_bottom_z = float(_world_bounds(bear_prim).GetMin()[2])
+    # Start it just above the ramp's high point so it drops onto the
+    # incline under gravity instead of spawning inside the collider.
+    bear_xform.SetTranslate(
+        Gf.Vec3d(ramp_pos_x, ramp_pos_y, ramp_top_z - bear_bottom_z + 0.03)
+    )
+
+    UsdPhysics.RigidBodyAPI.Apply(bear_prim)
+    UsdPhysics.MassAPI.Apply(bear_prim).CreateMassAttr().Set(0.15)
+
+    bear_collider_path = f"{bear_prim_path}/collision_proxy"
+    bear_collider = UsdGeom.Cube.Define(stage, bear_collider_path)
+    bear_collider.GetSizeAttr().Set(1.0)
+    UsdGeom.XformCommonAPI(bear_collider.GetPrim()).SetScale(
+        Gf.Vec3f(
+            (bear_target_height * 0.6) / bear_scale_factor,
+            (bear_target_height * 0.5) / bear_scale_factor,
+            bear_target_height / bear_scale_factor,
+        )
+    )
+    UsdGeom.Imageable(bear_collider.GetPrim()).MakeInvisible()
+    UsdPhysics.CollisionAPI.Apply(bear_collider.GetPrim())
 
     #
     # Coloured wooden rods to pick (elongated cuboids so grasp orientation
@@ -372,7 +516,7 @@ def main():
     # rclpy builds), so this needs no ROS2 context here at all.
     #
     rod_paths = [f"/World/{name}" for name, _, _ in rods]
-    attachable_paths = rod_paths + [person_prim_path]
+    attachable_paths = rod_paths + [person_prim_path, donut_prim_path, bear_prim_path]
     attacher = GripperAttacher(stage, tool0_path, gripper_tip_path, attachable_paths, attach_radius=gripper_reach)
 
     #
