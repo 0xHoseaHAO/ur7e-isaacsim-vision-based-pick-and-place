@@ -4,7 +4,7 @@
   <name>vision_pick</name>
   <version>0.1.0</version>
   <description>HSV colour segmentation and RGB-D object localization for Isaac Sim.</description>
-  <maintainer email="maintainer@example.com">Vision Pick</maintainer>
+  <maintainer email="0xHoseaHAO@users.noreply.github.com">0xHoseaHAO</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_python</buildtool_depend>

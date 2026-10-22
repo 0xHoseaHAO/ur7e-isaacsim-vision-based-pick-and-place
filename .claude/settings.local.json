@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python3 -c ' *)",
-      "Bash(python3 -m py_compile simScripts/bringup.py simScripts/gripper_attach.py vision_pick/vision_pick/*.py)"
-    ]
-  }
-}

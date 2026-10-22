@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+*.egg
+
+# ROS 2 / colcon
+build/
+install/
+log/
+.colcon/
+
+# Editors / agents
+.claude/
+.idea/
+*.swp
+*~
+
+# Weights (Ultralytics downloads on first run)
+*.pt
+*.pt.bk
+*.onnx
+*.engine
+weights/
+models/
+
+# Runtime / OS
+*.log
+.DS_Store
+.env
+.venv/
+venv/
