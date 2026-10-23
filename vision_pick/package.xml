@@ -23,9 +23,9 @@
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
-  <!-- yolo_detection_node needs `ultralytics` (pip install ultralytics) --
-       not a rosdep key, so it's not declared as an exec_depend here; would
-       break `rosdep install` for anyone without it pip-installed. -->
+  <!-- yolo_detection_node needs ultralytics (pip install ultralytics).
+       It is not a rosdep key, so it is not declared as an exec_depend.
+       Declaring it would break rosdep install for anyone without the pip package. -->
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
